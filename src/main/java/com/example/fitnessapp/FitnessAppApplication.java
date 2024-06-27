@@ -22,6 +22,7 @@ import javax.sql.DataSource;
 @SpringBootApplication
 @EnableAsync
 @EnableScheduling
+
 public class FitnessAppApplication {
 
 	@Autowired

@@ -1,6 +1,7 @@
 package com.example.fitnessapp.services.impl;
 
 import com.example.fitnessapp.models.dtos.FitnessNews;
+import com.example.fitnessapp.services.LoggerService;
 import com.example.fitnessapp.services.RSSService;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
@@ -18,8 +19,16 @@ public class RSSServiceImpl implements RSSService {
     @Value("${rss}")
     private String link;
 
+    private final LoggerService loggerService;
+
+    public RSSServiceImpl(LoggerService loggerService) {
+        this.loggerService = loggerService;
+    }
+
     @Override
     public List<FitnessNews> getFeeds() {
+        loggerService.addLog("Getting RSS feeds");
+
         List<FitnessNews> news = new ArrayList<>();
         try {
             URL source = new URL(link);

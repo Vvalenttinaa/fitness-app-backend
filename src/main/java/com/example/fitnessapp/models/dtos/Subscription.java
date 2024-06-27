@@ -14,5 +14,6 @@ public class Subscription {
     private Date date;
     private Integer userId;
     private Integer categoryId;
+    private String categoryName;
     private Integer id;
 }

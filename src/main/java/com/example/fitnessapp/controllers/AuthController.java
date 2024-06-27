@@ -12,6 +12,16 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.net.URI;
+
 @RestController
 @RequestMapping("api/auth")
 public class AuthController {
@@ -27,21 +37,37 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public void registerClient(@Valid @RequestBody RegisterRequest request) {
+    public User registerClient(@Valid @RequestBody RegisterRequest request) {
         logger.info("Received registration request: {}", request);
 
         try {
-            this.authService.register(request);
-            logger.info("Registration successful for user: {}", request.getUsername());
+            return this.authService.register(request);
+       //     logger.info("Registration successful for user: {}", request.getUsername());
         } catch (Exception e) {
             logger.error("Error occurred during registration:", e);
-            throw e; // ili bilo koju drugu odgovarajuću grešku
+            throw e;
         }
     }
 
     @GetMapping("/activate/{id}")
-    public Boolean activateAccount(@PathVariable Integer id){
-        return this.authService.activateAccount(id);
+    public ResponseEntity<Void> activateAccount(@PathVariable Integer id) {
+        boolean activated = authService.activateAccount(id);
+        if (activated) {
+            URI redirectUri = URI.create("http://localhost:4200/registration?activated=true");
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.setLocation(redirectUri);
+            return new ResponseEntity<>(httpHeaders, HttpStatus.SEE_OTHER);
+        } else {
+            URI redirectUri = URI.create("http://localhost:4200/registration?error=invalid");
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.setLocation(redirectUri);
+            return new ResponseEntity<>(httpHeaders, HttpStatus.SEE_OTHER);
+        }
+    }
+
+    @PostMapping("/resendEmail")
+        public void resendEmail(@RequestBody LoginRequest loginRequest){
+            authService.resendActivationMail(loginRequest);
     }
 
     @PostMapping("/login")

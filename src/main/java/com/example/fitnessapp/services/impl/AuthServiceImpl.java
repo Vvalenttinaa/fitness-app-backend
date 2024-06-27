@@ -12,6 +12,7 @@ import com.example.fitnessapp.repositories.CityRepository;
 import com.example.fitnessapp.repositories.DiaryRepository;
 import com.example.fitnessapp.repositories.UserRepository;
 import com.example.fitnessapp.services.AuthService;
+import com.example.fitnessapp.services.LoggerService;
 import com.example.fitnessapp.services.MailService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -33,22 +34,26 @@ public class AuthServiceImpl implements AuthService {
     private final ModelMapper mapper;
     private final MailService emailService;
     private final HttpServletRequest request;
+    private final LoggerService loggerService;
 
     @PersistenceContext
     private EntityManager entityManager;
 
-    public AuthServiceImpl(UserRepository userRepository, CityRepository cityRepository, DiaryRepository diaryRepository, ModelMapper mapper, MailService emailService, HttpServletRequest request) {
+    public AuthServiceImpl(UserRepository userRepository, CityRepository cityRepository, DiaryRepository diaryRepository, ModelMapper mapper, MailService emailService, HttpServletRequest request, LoggerService loggerService) {
         this.userRepository = userRepository;
         this.cityRepository = cityRepository;
         this.diaryRepository = diaryRepository;
         this.mapper = mapper;
         this.emailService = emailService;
         this.request = request;
+        this.loggerService = loggerService;
     }
 
     @Override
-    public void register(RegisterRequest request) {
+    public User register(RegisterRequest request) {
+        loggerService.addLog("Registration for user " + request.getFirstName());
         if (userRepository.existsByMail(request.getMail())) {
+            loggerService.addLog("User already exists");
             throw new AlreadyExistsException();
         }
         UserEntity entity = mapper.map(request, UserEntity.class);
@@ -78,41 +83,37 @@ public class AuthServiceImpl implements AuthService {
         m.setMailSubject("Verifikacija");
         m.setMailFrom("valentinabozic251@gmail.com");
         emailService.sendEmail(m, entity.getId());
+        return mapper.map(entity, User.class);
     }
+
 
     @Override
     public User login(LoginRequest request) {
+        loggerService.addLog("Login for " + request.getUsername());
         UserEntity userEntity = null;
             userEntity = userRepository.findByUsername(request.getUsername()).orElseThrow(NotFoundException::new);
             User user = mapper.map(userEntity, User.class);
+            user.setToken("true");
         if (userEntity.getActive().equals("blocked")) {
+            loggerService.addLog("Account is blocked");
             throw new AccountBlockedException();
         }
         if (userEntity.getActive().equals("false")) {
-            resendActivationMail(userEntity);
-            throw new NotApprovedException();
+            loggerService.addLog("Account is not active");
+           // resendActivationMail(userEntity);
+//            throw new NotApprovedException();
         }
         return user;
     }
 
-    /*
-    @Override
-    public boolean checkDetails(CheckDetailsDTO checkDetailsDTO) {
-        // this.logService.info("Client "+this.request.getRemoteAddr()+" trying to check email username availability.");
-        if (checkDetailsDTO.getColumn().equals("email") || checkDetailsDTO.getColumn().equals("clientEmail")) {
-            return clientRepository.existsByEmail(checkDetailsDTO.getValue());
-        } else if (checkDetailsDTO.getColumn().equals("username") || checkDetailsDTO.getColumn().equals("clientUsername")) {
-            return clientRepository.existsByUsername(checkDetailsDTO.getValue());
-        }
-        return false;
-    }
-    */
 
     @Override
     public boolean activateAccount(Integer id) {
         if(id == null) {
             return false;
         }
+        loggerService.addLog("Account activation");
+
         UserEntity userEntity = userRepository.findById(id).get();
         userEntity.setActive("true");
         userRepository.saveAndFlush(userEntity);
@@ -120,14 +121,29 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void resendActivationMail(UserEntity user) {
+    public void resendActivationMail(LoginRequest loginRequest) {
+
+        UserEntity userEntity = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow(NotFoundException::new);
+        User user = null;
+        if(userEntity.getPassword().equals(loginRequest.getPassword())) {
+            user = mapper.map(userEntity, User.class);
+        }else{
+            return;
+        }
+
+        loggerService.addLog("Resending activation mail to " + user.getFirstName());
+
         Mail m = new Mail();
         m.setMailTo(user.getMail());
+        m.setMailSubject("Reactivation");
+        m.setMailFrom("valentinabozic251@gmail.com");
         this.emailService.sendEmail(m, user.getId());
     }
 
         @Override
         public User update(User request) {
+            loggerService.addLog("Updating user " + request.getFirstName());
+
             UserEntity userOld = userRepository.findById(request.getId()).orElseThrow(() -> new NotFoundException());
             if (!Objects.equals(request.getFirstName(), userOld.getFirstName())) {
                 userOld.setFirstName(request.getFirstName());
@@ -151,23 +167,4 @@ public class AuthServiceImpl implements AuthService {
             return mapper.map(updatedUserEntity, User.class);
         }
 
-/*
-    @Override
-    public void changePassword(ChangePasswordDTO changePasswordDTO, Authentication authentication) {
-        this.logService.info("Client "+this.request.getRemoteAddr()+" trying to change password.");
-        var user=clientRepository.findById(changePasswordDTO.getId()).orElseThrow(NotFoundException::new);
-        var jwtUser=(JwtUserDTO)authentication.getPrincipal();
-        if(!jwtUser.getId().equals(user.getId())) {
-            this.logService.warning("Attempted action on someone else's account. Client:"+jwtUser.getUsername()+".");
-            throw new UnauthorizedException();
-        }
-        if(!passwordEncoder.matches(changePasswordDTO.getOldPassword(), user.getPassword())) {
-            this.logService.warning("Client "+jwtUser.getUsername()+"failed to change passwords. Passwords do not match");
-            throw new PasswordMismatchException();
-        }
-        user.setPassword(passwordEncoder.encode(changePasswordDTO.getNewPassword()));
-        this.logService.info("Client "+jwtUser.getUsername()+" successfully changed the password.");
-    }
-
- */
 }

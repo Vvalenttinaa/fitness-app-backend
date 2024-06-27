@@ -8,7 +8,6 @@ import java.util.List;
 
 @Entity
 @Data
-@ToString
 @Table(name = "category", schema = "fitness_app_db", catalog = "")
 public class CategoryEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,4 +23,8 @@ public class CategoryEntity {
     private List<ProgramEntity> programsById;
     @OneToMany(mappedBy = "categoryByCategoryId")
     private List<SubscriptionEntity> subscriptionsById;
+    @Override
+    public String toString(){
+        return "Category " + name + ", id " + id;
+    }
 }

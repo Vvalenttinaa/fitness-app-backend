@@ -14,11 +14,11 @@ public class Status {
     private Integer programId;
     private Integer userId;
     private Integer paymentMethodId;
+    private String paymentMethodName;
     private Byte paid;
     private Integer id;
     private Program programByProgramId;
     private User userByUserId;
     private PaymentMethod paymentMethodByPaymentMethodId;
     private String state;
-
 }

@@ -50,6 +50,12 @@ public class CategoryController {
     @GetMapping("/attributeDescriptions")
     public List<AttributeDescription> getAttributeDescriptions(){ return attributeDescriptionService.findAll();}
 
+    @GetMapping("/attributes/{id}/description")
+    public List<AttributeDescription>getAttributeDescriptionsByAttributeId(@PathVariable Integer id)
+    {
+        return attributeDescriptionService.findByAttributeId(id);
+    }
+
 
 }
 

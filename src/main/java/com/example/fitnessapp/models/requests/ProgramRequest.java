@@ -13,7 +13,6 @@ import java.util.List;
 public class ProgramRequest {
     @NotBlank
     private String name;
-    @NotEmpty
     private List<ImageRequest> images;
     @NotBlank
     private Double price;
@@ -30,7 +29,7 @@ public class ProgramRequest {
     @NotBlank
     private String instructorName;
     @NotBlank
-    private String categoryName;
+    private Integer categoryId;
     @NotEmpty
     private List<AttributeDescriptionRequest> attributes;
 }

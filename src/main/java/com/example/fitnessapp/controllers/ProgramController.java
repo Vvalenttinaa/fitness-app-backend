@@ -9,6 +9,8 @@ import com.example.fitnessapp.models.requests.ReplyRequest;
 import com.example.fitnessapp.models.requests.SearchRequest;
 import com.example.fitnessapp.services.ProgramService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 
@@ -24,9 +26,16 @@ public class ProgramController {
         this.programService = service;
     }
 
+//    @GetMapping("")
+//    public List<Program> getAll() {
+//        return programService.findAll();
+//    }
+
     @GetMapping("")
-    public List<Program> getAll( @RequestParam(required = false)String category, @RequestParam(required = false) String attribute) {
-        return programService.findAll(category, attribute);
+    public Page<Program> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        return programService.findAll(page, size);
     }
 
     @GetMapping("/{id}")
@@ -40,18 +49,20 @@ public class ProgramController {
         return programService.insert(programRequest);
     }
 
+
     @GetMapping("/search")
-    public List<Program> searchPrograms(@RequestParam(required = false) String category,
+    public Page<Program> searchPrograms(@RequestParam(required = false) String category,
                                         @RequestParam(required = false) String search,
                                         @RequestParam(required = false) String attribute,
-                                        @RequestParam(required = false) String description)
+                                        @RequestParam(required = false) String description,
+                                        Pageable page)
     {
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.setCategory(category);
         searchRequest.setSearch(search);
         searchRequest.setAttribute(attribute);
         searchRequest.setDescription(description);
-        return programService.searchProgram(searchRequest);
+        return programService.searchProgram(searchRequest, page);
     }
     @PostMapping("/{id}/comments")
     public Comment commentFitnessProgram(@PathVariable Integer id, @Valid @RequestBody CommentRequest commentRequest){
@@ -67,7 +78,7 @@ public class ProgramController {
         return this.programService.findAllRepliesByComment(id);
     }
     @GetMapping("/{id}/comments")
-    public  List<Comment> findAllCommentsForFp(@PathVariable Integer id){
+    public  List<Comment> findAllCommentsForProgram(@PathVariable Integer id){
         return this.programService.findAllCommentsByProgram(id);
     }
 }

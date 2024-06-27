@@ -8,4 +8,5 @@ import java.util.List;
 public interface StatisticService {
     Statistic insertStatistic(StatisticRequest statisticRequest, Integer userId);
     List<Statistic> readStatistic(Integer id);
+    public byte[] generatePDF(List<Statistic> statistics);
 }

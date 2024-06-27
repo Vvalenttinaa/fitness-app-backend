@@ -28,7 +28,7 @@ public class ImageEntity {
     @Column(name = "program_id", insertable=false, updatable=false)
     private Integer programId;
     @ManyToOne
-    @JoinColumn(name = "program_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "program_id", referencedColumnName = "id")
     private ProgramEntity programByProgramId;
 
 }

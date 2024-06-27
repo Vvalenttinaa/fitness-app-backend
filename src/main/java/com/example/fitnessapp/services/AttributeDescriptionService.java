@@ -8,4 +8,5 @@ public interface AttributeDescriptionService {
     List<AttributeDescription> findByProgramId(Integer id);
     AttributeDescription findById(Integer id);
     List<AttributeDescription> findAll();
+    List<AttributeDescription> findByAttributeId(Integer id);
 }

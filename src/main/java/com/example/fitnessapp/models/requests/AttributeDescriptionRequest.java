@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class AttributeDescriptionRequest {
     @NotBlank
-    private String attributeName;
+    private String name;
     @NotBlank
-    private String value;
+    private Integer attributeId;
 }

@@ -13,10 +13,11 @@ public class User {
     private String lastName;
     private String username;
     private String password;
-    private String avatar;
+    private Integer avatar;
     private String card;
     private String mail;
     private Integer cityId;
+    private String cityName;
     private String active;
     private Integer diaryId;
     private String token;
@@ -27,7 +28,7 @@ public class User {
     //private List<Program> programsById;
  //   private List<Reply> repliesById;
    // private List<Status> statusesById;
-    private List<Subscription> subscriptionsById;
-    private City cityByCityId;
+//    private List<Subscription> subscriptionsById;
+//    private City cityByCityId;
     private Diary diaryByDiaryId;
 }
